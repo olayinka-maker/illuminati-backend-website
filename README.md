@@ -96,3 +96,31 @@ async function populate(contactId) {
 
 - The API uses a local SQLite DB (`contacts.db`) created automatically.
 - CORS is enabled for development; restrict `allow_origins` for production.
+
+## Deployment
+
+Recommended options: Render (quick GitHub connect) or Docker (any host or VPS).
+
+### Files included for deployment
+- `Dockerfile` — container image using `gunicorn` + `uvicorn` worker.
+- `Procfile` — optional; used by some hosts to start the app.
+- `requirements.txt` — includes `gunicorn` and `psycopg[binary]` for Postgres support.
+
+### Quick Render setup
+1. Push your repo to GitHub.
+2. On Render, create a new Web Service and connect your repo/branch.
+3. If you selected the `Dockerfile` (recommended), Render will build the Docker image.
+4. Otherwise set:
+  - Build Command: `pip install -r requirements.txt`
+  - Start Command: `gunicorn -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT --workers 4`
+5. Add environment variables (for example `DATABASE_URL` for Postgres).
+
+### Switching to Postgres in production
+Set the `DATABASE_URL` environment variable (for example, `postgresql://user:pass@host:5432/dbname`). The app reads `DATABASE_URL` and falls back to a local SQLite file when not provided.
+
+### Docker (build & run locally)
+```bash
+docker build -t contactapi:latest .
+docker run -p 8000:8000 -e PORT=8000 contactapi:latest
+```
+
